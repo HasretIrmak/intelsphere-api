@@ -1,9 +1,20 @@
-﻿namespace IntelSphere.API.DTOs
+using System.ComponentModel.DataAnnotations;
+
+namespace IntelSphere.API.DTOs
 {
     public class MonitoredDomainCreateDto
     {
-        public string DomainName { get; set; } = string.Empty; // E.g.: beykent.edu.tr
-        public string CompanyName { get; set; } = string.Empty; // E.g.: Beykent University
-        public string ContactEmail { get; set; } = string.Empty; // E.g.: security@beykent.edu.tr
+        [Required]
+        [StringLength(253)]
+        public string DomainName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(200)]
+        public string CompanyName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [StringLength(254)]
+        public string ContactEmail { get; set; } = string.Empty;
     }
 }
