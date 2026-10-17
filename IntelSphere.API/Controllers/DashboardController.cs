@@ -21,20 +21,20 @@ namespace IntelSphere.API.Controllers
         [HttpGet("overview")]
         public async Task<IActionResult> GetIntelligenceOverview()
         {
-            // 1. Temel Sayaçlar
+            // 1. Basic Counters
             var totalMonitoredCompanies = await _context.MonitoredDomains.CountAsync();
             var totalBreachSources = await _context.BreachSources.CountAsync();
             var totalLeakedCredentials = await _context.LeakedCredentials.CountAsync();
 
-            // 2. Takipteki Şirketlerin Ortalama Risk Skoru
+            // 2. Average Risk Score of Monitored Companies
             double averageRiskScore = 0;
             if (totalMonitoredCompanies > 0)
             {
                 averageRiskScore = await _context.MonitoredDomains.AverageAsync(d => d.RiskScore);
             }
 
-            // 3. En Riskli İlk 3 Şirket (Kritik Raporlama)
-            var topRiskiveCompanies = await _context.MonitoredDomains
+            // 3. Top 3 Riskiest Companies (Critical Reporting)
+            var topRiskyCompanies = await _context.MonitoredDomains
                 .OrderByDescending(d => d.RiskScore)
                 .Take(3)
                 .Select(d => new
@@ -42,29 +42,29 @@ namespace IntelSphere.API.Controllers
                     d.CompanyName,
                     d.DomainName,
                     d.RiskScore,
-                    RiskSeviyesi = d.RiskScore >= 75 ? "Kritik" : d.RiskScore >= 50 ? "Yüksek" : "Orta/Düşük"
+                    RiskLevel = d.RiskScore >= 75 ? "Critical" : d.RiskScore >= 50 ? "High" : "Medium/Low"
                 })
                 .ToListAsync();
 
-            // 4. Genel Siber Tehdit Seviyesi Belirleme
-            string generalThreatLevel = "ORTA SEVİYE SİBER AKTİVİTE";
-            if (averageRiskScore >= 75) generalThreatLevel = "KRİTİK DURUM (KIRMIZI ALARM)";
-            else if (averageRiskScore >= 50) generalThreatLevel = "YÜKSEK TEHDİT (TURUNCU ALARM)";
-            else if (averageRiskScore == 0 && totalLeakedCredentials == 0) generalThreatLevel = "DÜŞÜK SEVİYE / GÜVENLİ";
+            // 4. General Cyber Threat Level Determination
+            string generalThreatLevel = "MEDIUM LEVEL CYBER ACTIVITY";
+            if (averageRiskScore >= 75) generalThreatLevel = "CRITICAL CONDITION (RED ALERT)";
+            else if (averageRiskScore >= 50) generalThreatLevel = "HIGH THREAT (ORANGE ALERT)";
+            else if (averageRiskScore == 0 && totalLeakedCredentials == 0) generalThreatLevel = "LOW LEVEL / SECURE";
 
-            // Tüm analitiği tek bir raporda birleştirip dönüyoruz
+            // Combining all analytics into a single report and returning it
             return Ok(new
             {
-                raporTarihi = System.DateTime.UtcNow,
-                genelSiberTehditSeviyesi = generalThreatLevel,
-                sistemGenelIstatistikleri = new
+                reportDate = System.DateTime.UtcNow,
+                generalCyberThreatLevel = generalThreatLevel,
+                systemGeneralStatistics = new
                 {
-                    toplamTakipEdilenDomain = totalMonitoredCompanies,
-                    toplamSiziantiKaynakPaketi = totalBreachSources,
-                    veriTabanindakiToplamSiziantiHesap = totalLeakedCredentials,
-                    izlenenKurumlarRiskOrtalamasi = System.Math.Round(averageRiskScore, 2)
+                    totalMonitoredDomains = totalMonitoredCompanies,
+                    totalBreachSources = totalBreachSources,
+                    totalLeakedCredentialsInDatabase = totalLeakedCredentials,
+                    monitoredCompaniesAverageRiskScore = System.Math.Round(averageRiskScore, 2)
                 },
-                enYuksekRiskliKurumlar = topRiskiveCompanies
+                topRiskyCompanies = topRiskyCompanies
             });
         }
     }

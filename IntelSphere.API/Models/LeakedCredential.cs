@@ -4,25 +4,25 @@ namespace IntelSphere.API.Models
 {
     public class LeakedCredential
     {
-        // Benzersiz kimlik (Primary Key)
+        // Unique identifier (Primary Key)
         public int Id { get; set; }
 
-        // Sızdırılan e-posta adresi (Örn: ahmet@beykent.edu.tr)
+        // Leaked email address (E.g., ahmet@beykent.edu.tr)
         public string Email { get; set; } = string.Empty;
 
-        // E-postanın ait olduğu alan adı (Sorguları hızlandırmak için: beykent.edu.tr)
+        // Domain name to which the email belongs (To speed up queries: beykent.edu.tr)
         public string Domain { get; set; } = string.Empty;
 
-        // Sızan şifrenin SHA256 veya MD5 hash hali (Güvenlik için asla düz metin tutmayacağız)
+        // SHA256 or MD5 hash of the leaked password (We will never store plain text for security)
         public string PasswordHash { get; set; } = string.Empty;
 
-        // Bu verinin hangi sızıntı kaynağından geldiğini belirten ilişki (Foreign Key)
+        // Foreign Key indicating which breach source this data came from
         public int BreachSourceId { get; set; }
 
-        // İlişkisel Veri Tabanı Bağlantısı (Navigation Property)
+        // Relational Database Connection (Navigation Property)
         public BreachSource? BreachSource { get; set; }
 
-        // Verinin sisteme işlendiği tarih
+        // Date when the data was processed into the system
         public DateTime DiscoveredAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -4,22 +4,22 @@ namespace IntelSphere.API.Models
 {
     public class MonitoredDomain
     {
-        // Benzersiz kimlik (Primary Key)
+        // Unique identifier (Primary Key)
         public int Id { get; set; }
 
-        // Takip edilen şirket alan adı (Örn: beykent.edu.tr)
+        // Monitored company domain name (E.g., beykent.edu.tr)
         public string DomainName { get; set; } = string.Empty;
 
-        // Şirketin adı veya unvanı
+        // Name or title of the company
         public string CompanyName { get; set; } = string.Empty;
 
-        // Bildirimlerin gönderileceği kurumsal e-posta
+        // Corporate email address where notifications will be sent
         public string ContactEmail { get; set; } = string.Empty;
 
-        // Şirket için hesaplanan en güncel siber risk skoru (0 - 100 arası)
+        // The latest calculated cyber risk score for the company (Between 0 and 100)
         public int RiskScore { get; set; } = 0;
 
-        // Takibin başlatıldığı tarih
+        // Date when monitoring was initiated
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

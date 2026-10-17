@@ -47,7 +47,7 @@ namespace IntelSphere.API.Controllers
 
             if (domain == null)
             {
-                return NotFound(new { message = $"{id} ID'li izlenen domain bulunamadı." });
+                return NotFound(new { message = $"Monitored domain with ID {id} was not found." });
             }
 
             var response = new MonitoredDomainResponseDto
@@ -69,10 +69,10 @@ namespace IntelSphere.API.Controllers
         {
             var newDomain = new MonitoredDomain
             {
-                DomainName = createDto.DomainName.ToLower().Trim(), // Domain standart küçük harf ve temiz olmalı
+                DomainName = createDto.DomainName.ToLower().Trim(), // Domain should be standard lowercase and clean
                 CompanyName = createDto.CompanyName,
                 ContactEmail = createDto.ContactEmail,
-                RiskScore = 0 // Yeni eklenen şirketin risk skoru başlangıçta 0'dır.
+                RiskScore = 0 // The risk score of the newly added company is initially 0.
             };
 
             _context.MonitoredDomains.Add(newDomain);
@@ -99,7 +99,7 @@ namespace IntelSphere.API.Controllers
 
             if (existingDomain == null)
             {
-                return NotFound(new { message = $"Güncellenmek istenen {id} ID'li şirket bulunamadı." });
+                return NotFound(new { message = $"The company with ID {id} requested for update was not found." });
             }
 
             existingDomain.DomainName = updateDto.DomainName.ToLower().Trim();
@@ -119,24 +119,24 @@ namespace IntelSphere.API.Controllers
 
             if (domain == null)
             {
-                return NotFound(new { message = $"Silinmek istenen {id} ID'li şirket bulunamadı." });
+                return NotFound(new { message = $"The company with ID {id} requested for deletion was not found." });
             }
 
             _context.MonitoredDomains.Remove(domain);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Şirket domaini takip listesinden başarıyla silindi." });
+            return Ok(new { message = "Company domain successfully deleted from the tracking list." });
         }
 
         // =========================================================================
-        // SİBER İSTİHBARAT VE ANALİZ MOTORU METOTLARI (YENİ EKLENEN KISIM)
+        // CYBER INTELLIGENCE AND ANALYSIS ENGINE METHODS (NEWLY ADDED SECTION)
         // =========================================================================
 
-        // 6. SIZINTI SİMÜLASYONU -> POST: api/v1/MonitoredDomains/simulate-leaks
+        // 6. LEAK SIMULATION -> POST: api/v1/MonitoredDomains/simulate-leaks
         [HttpPost("simulate-leaks")]
         public async Task<IActionResult> SimulateLeaks()
         {
-            // Mükerrer kayıt olmaması için eski simülasyon verilerini temizleyelim
+            // Let's clean up old simulation data to prevent duplicate records
             var existingLeaks = await _context.LeakedCredentials.ToListAsync();
             if (existingLeaks.Any())
             {
@@ -144,7 +144,7 @@ namespace IntelSphere.API.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Örnek sızıntı verileri (Güvenlik amacıyla SHA256 şifre hash'leri tutuluyor)
+            // Sample leak data (SHA256 password hashes are kept for security purposes)
             var mockLeaks = new List<LeakedCredential>
             {
                 new LeakedCredential { Email = "ahmet@beykent.edu.tr", Domain = "beykent.edu.tr", PasswordHash = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", BreachSourceId = 1 },
@@ -156,39 +156,39 @@ namespace IntelSphere.API.Controllers
             _context.LeakedCredentials.AddRange(mockLeaks);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Siber istihbarat simülasyon verileri (Leaked Credentials) başarıyla yüklendi!" });
+            return Ok(new { message = "Cyber intelligence simulation data (Leaked Credentials) successfully loaded!" });
         }
 
-        // 7. SİBER RİSK ANALİZ MOTORU -> POST: api/v1/MonitoredDomains/analyze/beykent.edu.tr
+        // 7. CYBER RISK ANALYSIS ENGINE -> POST: api/v1/MonitoredDomains/analyze/beykent.edu.tr
         [HttpPost("analyze/{domainName}")]
         public async Task<IActionResult> AnalyzeDomainRisk(string domainName)
         {
             var cleanedDomain = domainName.ToLower().Trim();
 
-            // Şirket takip listemizde ekli mi?
+            // Is the company added to our tracking list?
             var domain = await _context.MonitoredDomains.FirstOrDefaultAsync(d => d.DomainName == cleanedDomain);
             if (domain == null)
             {
-                return NotFound(new { message = $"Takip listesinde '{cleanedDomain}' adında bir domain bulunamadı." });
+                return NotFound(new { message = $"No domain named '{cleanedDomain}' was found in the tracking list." });
             }
 
-            // Domaine ait sızıntı sayısını veritabanından çekiyoruz (İndeksli alan performansı)
+            // Fetching the leak count belonging to the domain from the database (Indexed field performance)
             var leakCount = await _context.LeakedCredentials.CountAsync(lc => lc.Domain == cleanedDomain);
 
-            // Risk Skoru Hesaplama Algoritması: Her sızıntı başı 25 puan, tavan sınır 100
+            // Risk Score Calculation Algorithm: 25 points per leak, ceiling limit 100
             int calculatedScore = leakCount * 25;
             if (calculatedScore > 100) calculatedScore = 100;
 
-            // Hesaplanan dinamik skoru veritabanına yansıtıyoruz
+            // Reflecting the calculated dynamic score to the database
             domain.RiskScore = calculatedScore;
             await _context.SaveChangesAsync();
 
             return Ok(new
             {
-                message = $"'{cleanedDomain}' için siber risk analizi tamamlandı.",
-                toplamSiziantiSayisi = leakCount,
-                hesaplananSiberRiskSkoru = calculatedScore,
-                durum = calculatedScore >= 75 ? "KRİTİK TEHLİKE" : calculatedScore >= 50 ? "YÜKSEK RİSK" : calculatedScore > 0 ? "ORTA TEHLİKE" : "GÜVENLİ"
+                message = $"Cyber risk analysis completed for '{cleanedDomain}'.",
+                totalLeakCount = leakCount,
+                calculatedCyberRiskScore = calculatedScore,
+                status = calculatedScore >= 75 ? "CRITICAL DANGER" : calculatedScore >= 50 ? "HIGH RISK" : calculatedScore > 0 ? "MEDIUM DANGER" : "SECURE"
             });
         }
     }

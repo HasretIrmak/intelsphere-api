@@ -4,19 +4,19 @@ namespace IntelSphere.API.Models
 {
     public class BreachSource
     {
-        // Benzersiz kimlik (Primary Key)
+        // Unique identifier (Primary Key)
         public int Id { get; set; }
 
-        // Sızıntının adı (Örn: LinkedIn Veri Sızıntısı)
+        // Name of the breach (E.g., LinkedIn Data Breach)
         public string SourceName { get; set; } = string.Empty;
 
-        // Verinin sızdırıldığı tahmini tarih
+        // Estimated date when the data was breached
         public DateTime BreachDate { get; set; }
 
-        // Sisteme eklenme tarihi
+        // Date added to the system
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Sızıntının tehlike seviyesi (Örn: Low, Medium, High, Critical)
+        // Severity level of the breach (E.g., Low, Medium, High, Critical)
         public string Severity { get; set; } = "Medium";
     }
 }

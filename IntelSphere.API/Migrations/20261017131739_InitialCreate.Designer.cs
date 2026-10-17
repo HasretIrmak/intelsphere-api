@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IntelSphere.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260607192603_InitialCreate")]
+    [Migration("20261017131739_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -2,8 +2,8 @@
 {
     public class MonitoredDomainCreateDto
     {
-        public string DomainName { get; set; } = string.Empty; // Örn: beykent.edu.tr
-        public string CompanyName { get; set; } = string.Empty; // Örn: Beykent Üniversitesi
-        public string ContactEmail { get; set; } = string.Empty; // Örn: security@beykent.edu.tr
+        public string DomainName { get; set; } = string.Empty; // E.g.: beykent.edu.tr
+        public string CompanyName { get; set; } = string.Empty; // E.g.: Beykent University
+        public string ContactEmail { get; set; } = string.Empty; // E.g.: security@beykent.edu.tr
     }
 }
