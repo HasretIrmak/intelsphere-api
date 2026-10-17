@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using IntelSphere.API.Data;
 using IntelSphere.API.Models;
@@ -69,7 +70,9 @@ namespace IntelSphere.API.Controllers
         {
             var newDomain = new MonitoredDomain
             {
-                DomainName = createDto.DomainName.ToLower().Trim(), // Domain should be standard lowercase and clean
+                // Domain should be standard lowercase and clean.
+                // ToLowerInvariant avoids culture-specific results (for example the Turkish dotless i).
+                DomainName = createDto.DomainName.ToLowerInvariant().Trim(),
                 CompanyName = createDto.CompanyName,
                 ContactEmail = createDto.ContactEmail,
                 RiskScore = 0 // The risk score of the newly added company is initially 0.
@@ -102,7 +105,7 @@ namespace IntelSphere.API.Controllers
                 return NotFound(new { message = $"The company with ID {id} requested for update was not found." });
             }
 
-            existingDomain.DomainName = updateDto.DomainName.ToLower().Trim();
+            existingDomain.DomainName = updateDto.DomainName.ToLowerInvariant().Trim();
             existingDomain.CompanyName = updateDto.CompanyName;
             existingDomain.ContactEmail = updateDto.ContactEmail;
 
@@ -129,7 +132,7 @@ namespace IntelSphere.API.Controllers
         }
 
         // =========================================================================
-        // CYBER INTELLIGENCE AND ANALYSIS ENGINE METHODS (NEWLY ADDED SECTION)
+        // CYBER INTELLIGENCE AND ANALYSIS ENGINE METHODS
         // =========================================================================
 
         // 6. LEAK SIMULATION -> POST: api/v1/MonitoredDomains/simulate-leaks
@@ -144,13 +147,29 @@ namespace IntelSphere.API.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Sample leak data (SHA256 password hashes are kept for security purposes)
+            // Attach the sample records to an existing breach source, or create one if none exists
+            var source = await _context.BreachSources.OrderBy(s => s.Id).FirstOrDefaultAsync();
+            if (source == null)
+            {
+                source = new BreachSource
+                {
+                    SourceName = "Sample Forum Dump",
+                    BreachDate = new DateTime(2024, 1, 15),
+                    CreatedAt = DateTime.UtcNow,
+                    Severity = "High"
+                };
+                _context.BreachSources.Add(source);
+                await _context.SaveChangesAsync();
+            }
+
+            // Synthetic sample data only: reserved example domains (RFC 2606) and placeholder hashes.
+            var now = DateTime.UtcNow;
             var mockLeaks = new List<LeakedCredential>
             {
-                new LeakedCredential { Email = "ahmet@beykent.edu.tr", Domain = "beykent.edu.tr", PasswordHash = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", BreachSourceId = 1 },
-                new LeakedCredential { Email = "mehmet@beykent.edu.tr", Domain = "beykent.edu.tr", PasswordHash = "4fa72a1e35d2d0c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", BreachSourceId = 1 },
-                new LeakedCredential { Email = "siber@beykent.edu.tr", Domain = "beykent.edu.tr", PasswordHash = "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b", BreachSourceId = 1 },
-                new LeakedCredential { Email = "ceo@sirket.com", Domain = "sirket.com", PasswordHash = "fbc5a0e35d2d0c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92", BreachSourceId = 1 }
+                new LeakedCredential { Email = "alice@example.edu", Domain = "example.edu", PasswordHash = new string('a', 64), BreachSourceId = source.Id, DiscoveredAt = now },
+                new LeakedCredential { Email = "bob@example.edu", Domain = "example.edu", PasswordHash = new string('b', 64), BreachSourceId = source.Id, DiscoveredAt = now },
+                new LeakedCredential { Email = "carol@example.edu", Domain = "example.edu", PasswordHash = new string('c', 64), BreachSourceId = source.Id, DiscoveredAt = now },
+                new LeakedCredential { Email = "ceo@example.com", Domain = "example.com", PasswordHash = new string('d', 64), BreachSourceId = source.Id, DiscoveredAt = now }
             };
 
             _context.LeakedCredentials.AddRange(mockLeaks);
@@ -159,11 +178,11 @@ namespace IntelSphere.API.Controllers
             return Ok(new { message = "Cyber intelligence simulation data (Leaked Credentials) successfully loaded!" });
         }
 
-        // 7. CYBER RISK ANALYSIS ENGINE -> POST: api/v1/MonitoredDomains/analyze/beykent.edu.tr
+        // 7. CYBER RISK ANALYSIS ENGINE -> POST: api/v1/MonitoredDomains/analyze/example.edu
         [HttpPost("analyze/{domainName}")]
         public async Task<IActionResult> AnalyzeDomainRisk(string domainName)
         {
-            var cleanedDomain = domainName.ToLower().Trim();
+            var cleanedDomain = domainName.ToLowerInvariant().Trim();
 
             // Is the company added to our tracking list?
             var domain = await _context.MonitoredDomains.FirstOrDefaultAsync(d => d.DomainName == cleanedDomain);
