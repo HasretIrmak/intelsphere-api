@@ -4,26 +4,26 @@ using IntelSphere.API.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==========================================
-// 1. SERVÝSLERÝ KAYDETME ALANI (DI CONTAINER)
+// 1. SERVICE REGISTRATION AREA (DI CONTAINER)
 // ==========================================
 
-// Veritabaný Baðlantýsýný (SQLite) uygulamaya tanýtýyoruz
+// Registering the Database Connection (SQLite) to the application
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 
-// Swagger/OpenAPI dökümantasyon servislerini ekliyoruz
+// Adding Swagger/OpenAPI documentation services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // ==========================================
-// 2. HTTP ÝSTEK HATTI AYARLARI (MIDDLEWARE)
+// 2. HTTP REQUEST PIPELINE SETTINGS (MIDDLEWARE)
 // ==========================================
 
-// Eðer uygulama geliþtirme modundaysa (Development), Swagger arayüzünü aktif et
+// Enable the Swagger interface if the application is in Development mode
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

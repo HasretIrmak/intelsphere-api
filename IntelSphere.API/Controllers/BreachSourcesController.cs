@@ -15,7 +15,7 @@ namespace IntelSphere.API.Controllers
     {
         private readonly AppDbContext _context;
 
-        // Dependency Injection ile veritabanı nesnemizi içeri alıyoruz
+        // Importing our database object using Dependency Injection
         public BreachSourcesController(AppDbContext context)
         {
             _context = context;
@@ -27,7 +27,7 @@ namespace IntelSphere.API.Controllers
         {
             var sources = await _context.BreachSources.ToListAsync();
 
-            // Veritabanı modelini dış dünyaya DTO olarak dönüştürüyoruz
+            // We convert the database model into a DTO for the outside world
             var response = sources.Select(s => new BreachSourceResponseDto
             {
                 Id = s.Id,
@@ -48,7 +48,7 @@ namespace IntelSphere.API.Controllers
 
             if (source == null)
             {
-                return NotFound(new { message = $"ID'si {id} olan sızıntı kaynağı bulunamadı." });
+                return NotFound(new { message = $"The leak source with ID {id} could not be found." });
             }
 
             var response = new BreachSourceResponseDto
@@ -67,7 +67,7 @@ namespace IntelSphere.API.Controllers
         [HttpPost]
         public async Task<ActionResult<BreachSourceResponseDto>> CreateSource([FromBody] BreachSourceCreateDto createDto)
         {
-            // DTO'dan gelen temiz veriyi gerçek Veritabanı nesnesine eşliyoruz
+            // We map the clean data from the DTO to the actual database object
             var newSource = new BreachSource
             {
                 SourceName = createDto.SourceName,
@@ -76,9 +76,9 @@ namespace IntelSphere.API.Controllers
             };
 
             _context.BreachSources.Add(newSource);
-            await _context.SaveChangesAsync(); // Veritabanına fiziksel kayıt
+            await _context.SaveChangesAsync(); // Physical record in the database
 
-            // Geriye kaydedilen nesnenin Response DTO halini dönüyoruz
+            // We return the Response DTO version of the saved object
             var response = new BreachSourceResponseDto
             {
                 Id = newSource.Id,
@@ -88,7 +88,7 @@ namespace IntelSphere.API.Controllers
                 CreatedAt = newSource.CreatedAt
             };
 
-            // 201 Created kodu ile verinin eklendiği adresi belirtiyoruz (RESTful standart)
+            // We specify the address where the data has been added using the 201 Created code (RESTful standard)
             return CreatedAtAction(nameof(GetSource), new { id = response.Id }, response);
         }
 
@@ -100,17 +100,17 @@ namespace IntelSphere.API.Controllers
 
             if (existingSource == null)
             {
-                return NotFound(new { message = $"Güncellenmek istenen {id} ID'li kaynak bulunamadı." });
+                return NotFound(new { message = $"The resource with ID {id} that you wish to update could not be found." });
             }
 
-            // Mevcut kayıtları DTO'dan gelen güncel verilerle yeniliyoruz
+            // We are updating the existing records with the latest data from the DTO
             existingSource.SourceName = updateDto.SourceName;
             existingSource.BreachDate = updateDto.BreachDate;
             existingSource.Severity = updateDto.Severity;
 
             await _context.SaveChangesAsync();
 
-            return NoContent(); // 204 NoContent -> Başarıyla güncellendi, geriye veri dönmeye gerek yok.
+            return NoContent(); // 204 NoContent -> Successfully updated; no need to return any data.
         }
 
         // 5. DELETE -> DELETE: api/v1/BreachSources/5
@@ -121,13 +121,13 @@ namespace IntelSphere.API.Controllers
 
             if (source == null)
             {
-                return NotFound(new { message = $"Silinmek istenen {id} ID'li kaynak bulunamadı." });
+                return NotFound(new { message = $"The resource with ID {id} that was intended to be deleted could not be found." });
             }
 
             _context.BreachSources.Remove(source);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Sızıntı kaynağı ve bu kaynağa bağlı tüm sızıntı kayıtları başarıyla silindi." });
+            return Ok(new { message = "The leak source and all leak records associated with this source have been successfully deleted." });
         }
     }
 }
