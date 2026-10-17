@@ -15,7 +15,7 @@ IntelSphere is a RESTful backend for monitoring data breach sources and indexing
 - **RESTful Web API** for breach source monitoring and domain risk indexing.
 - **Clean Architecture principles:** decoupled controllers, DTOs for request and response contracts, and persistence isolated behind Entity Framework Core.
 - **Automated database migrations** managed with EF Core.
-- **Swappable database provider:** SQLite for local development and testing, PostgreSQL for deployment.
+- **Swappable database provider:** SQLite for local development and testing and deployment.
 - **Interactive API documentation** through Swagger UI (OpenAPI).
 
 ## Tech Stack
